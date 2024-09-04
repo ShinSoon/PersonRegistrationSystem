@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Person Registration Form</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        form { max-width: 400px; margin: 0 auto; padding: 20px; }
+        div { margin-bottom: 15px; }
+        label { display: inline-block; width: 120px; }
+        input, select { width: 200px; padding: 5px; }
+        .error { color: red; font-size: 0.9em; margin-top: 5px; }
+        button { background-color: #4CAF50; color: white; padding: 10px 15px; border: none; cursor: pointer; }
+        button:hover { background-color: #45a049; }
+    </style>
+</head>
+<body>
+<h1>Person Registration</h1>
+<form th:action="@{/persons/save}" th:object="${person}" method="post">
+    <div>
+        <label for="icNumber">New IC Number:</label>
+        <input type="text" id="icNumber" th:field="*{icNumber}" required />
+        <span th:if="${#fields.hasErrors('icNumber')}" th:errors="*{icNumber}" class="error"></span>
+    </div>
+    <div>
+        <label for="gender">Gender:</label>
+        <select id="gender" th:field="*{gender}" required>
+            <option value="">Select Gender</option>
+            <option value="M">Male</option>
+            <option value="F">Female</option>
+        </select>
+        <span th:if="${#fields.hasErrors('gender')}" th:errors="*{gender}" class="error"></span>
+    </div>
+    <div>
+        <label for="dateOfBirth">Date of Birth:</label>
+        <input type="date" id="dateOfBirth" th:field="*{dateOfBirth}" required />
+        <span th:if="${#fields.hasErrors('dateOfBirth')}" th:errors="*{dateOfBirth}" class="error"></span>
+    </div>
+    <div>
+        <label for="postcode">Postcode:</label>
+        <input type="text" id="postcode" th:field="*{postcode}" required />
+        <span th:if="${#fields.hasErrors('postcode')}" th:errors="*{postcode}" class="error"></span>
+    </div>
+    <div>
+        <label for="town">Town:</label>
+        <input type="text" id="town" th:field="*{town}" required readonly />
+        <span th:if="${#fields.hasErrors('town')}" th:errors="*{town}" class="error"></span>
+    </div>
+    <div>
+        <button type="submit">Save</button>
+    </div>
+</form>
+
+<div th:if="${param.success}" style="color: green; text-align: center; margin-top: 20px;">
+    Person saved successfully!
+</div>
+
+
+<script>
+    document.querySelector('form').addEventListener('submit', function(e) {
+     let isValid = true;
+
+     // Validate IC Number (assuming it should not be empty)
+     const icNumber = document.getElementById('icNumber').value.trim();
+     if (icNumber === '') {
+         alert('IC Number is required');
+         isValid = false;
+     }
+
+     // Validate Gender
+     const gender = document.getElementById('gender').value.toUpperCase();
+     if (gender !== 'M' && gender !== 'F') {
+         alert('Gender must be M or F');
+         isValid = false;
+     }
+
+     // Validate Date of Birth (ensure it's not empty)
+     const dob = document.getElementById('dateOfBirth').value;
+     if (dob === '') {
+         alert('Date of Birth is required');
+         isValid = false;
+     }
+
+     // Validate Postcode (assuming it should not be empty)
+     const postcode = document.getElementById('postcode').value.trim();
+     if (postcode === '') {
+         alert('Postcode is required');
+         isValid = false;
+     }
+
+     if (!isValid) {
+         e.preventDefault(); // Prevent form submission if validation fails
+     }
+ });
+
+    document.getElementById('postcode').addEventListener('change', function() {
+    const postcode = this.value.trim();
+    if (postcode === '') return;
+
+    // Hardcoded postcode-town relationship as per the assignment
+    const postcodeTownMap = {
+        '08000': 'Sungai Petani',
+        '43200': 'Cheras'
+    };
+
+    const town = postcodeTownMap[postcode] || '';
+    document.getElementById('town').value = town;
+});
+
+    document.getElementById('icNumber').addEventListener('change', function() {
+    const icNumber = this.value.trim();
+    if (icNumber.length >= 6) {
+        // Assuming the first 6 digits of IC represent YYMMDD
+        const year = icNumber.substring(0, 2);
+        const month = icNumber.substring(2, 4);
+        const day = icNumber.substring(4, 6);
+        const lastDigitOfIcNumber = icNumber.slice(-1);
+
+        // Determine the century (this is a simple approach and might need adjustment)
+        const fullYear = parseInt(year) > 30 ? "19" + year : "20" + year;
+
+        const dob = `${fullYear}-${month}-${day}`;
+        document.getElementById('dateOfBirth').value = dob;
+
+        if(lastDigitOfIcNumber % 2 == 0)
+        {
+            document.getElementById('gender').value = 'F';
+        }
+        else{
+            document.getElementById('gender').value = 'M';
+        }
+    }
+});
+</script>
+</body>
+</html>
